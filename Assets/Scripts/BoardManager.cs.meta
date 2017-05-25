@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 91e689e907c6cb24985ce6a2b52a9b27
+timeCreated: 1495499780
+licenseType: Free
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - chessManager: {instanceID: 0}
+  - tile: {fileID: 1052570178663652, guid: 3e2db4d04a6a3fd4085d333309a2b981, type: 2}
+  - pawn: {fileID: 1888434734337456, guid: 661980136c909694cac0b402884864d2, type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
