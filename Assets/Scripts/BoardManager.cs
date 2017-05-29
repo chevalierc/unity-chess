@@ -9,7 +9,7 @@ public class BoardManager : MonoBehaviour {
     public int height;
     public bool isPlayerTurn;
     public Position selectedTile;
-    public Position[] poisitionTiles;
+    public Position[] possibleMovePositions;
 
     public Board tiles;
     public Board pieces;
@@ -17,6 +17,9 @@ public class BoardManager : MonoBehaviour {
 
     public GameObject tile;
     public GameObject pawn;
+
+    public GameObject[] PlayerStartingPieces;
+    public GameObject[] AiStartingPieces;
 
     private float tileWidth;
 
@@ -59,13 +62,14 @@ public class BoardManager : MonoBehaviour {
                 if (!pieces.positionIsFree(clickPosition) && !pieces.get(clickPosition).GetComponent<Piece>().isAI) {
                     selectTile(clickPosition);
                     getOptions(clickPosition);
+                    Debug.Log(possibleMovePositions.Length);
                     setOptions();
                 }
             } else {
                 if (clickPosition == selectedTile) {
                     resetTiles();
                 } else {
-                    if (new ArrayList(poisitionTiles).Contains(clickPosition)) {
+                    if (new ArrayList(possibleMovePositions).Contains(clickPosition)) {
                         movePiece(selectedTile, clickPosition, false);
                         doAiTurn();
                         resetTiles();
@@ -78,7 +82,7 @@ public class BoardManager : MonoBehaviour {
 
     private void getOptions(Position startPosition) {
         GameObject pieceToMove = pieces.get(startPosition);
-        poisitionTiles = pieceToMove.GetComponent<Piece>().getMovesDestinationFromLocationOnBoard(startPosition, pieces);
+        possibleMovePositions = pieceToMove.GetComponent<Piece>().getMovesDestinationFromLocationOnBoard(startPosition, pieces);
     }
 
     //piece gui
@@ -97,9 +101,10 @@ public class BoardManager : MonoBehaviour {
     //tile gui
 
     private void setOptions() {
-        for(var i = 0; i < poisitionTiles.Length; i++) {
-            Debug.Log(poisitionTiles[i].x + "," + poisitionTiles[i].y);
-            tiles.get(poisitionTiles[i]).GetComponent<Tile>().setAsOption();
+        Debug.Log(possibleMovePositions.Length);
+        for(var i = 0; i < possibleMovePositions.Length; i++) {
+            Debug.Log( possibleMovePositions[i].x + "," + possibleMovePositions[i].y );
+            tiles.get( possibleMovePositions[i] ).GetComponent<Tile>().setAsOption();
         }
     }
     
@@ -119,18 +124,49 @@ public class BoardManager : MonoBehaviour {
 
     private void initPieces() {
         pieces = new Board(width, height);
-        for(var i = 0; i < width; i++) {
-            GameObject newPiece = Instantiate(pawn, new Vector3(i * tileWidth, 0 * tileWidth, 0f), Quaternion.identity) as GameObject;
-            newPiece.GetComponent<Piece>().setAsAi(false);
-            Position position = new Position(i, 0);
-            pieces.set(position, newPiece);
+
+        //loop through player and ai
+        bool isAi = true;
+        for(int p = 0; p < 2; p++) {
+            if(p == 1) {
+                isAi = false;
+            }
+
+            List<GameObject> piecesToPlace;
+            if (isAi) {
+                piecesToPlace = new List<GameObject>(AiStartingPieces);
+            } else {
+                piecesToPlace = new List<GameObject>(PlayerStartingPieces);
+            }
+
+            //sort by the value of the pieces
+            piecesToPlace.Sort(
+                (x, y) => y.GetComponent<Piece>().value.CompareTo(x.GetComponent<Piece>().value)
+            );
+            //instantiate each piece
+            for (var i = 0; i < piecesToPlace.Count; i++) {
+                Position newPosition = indexToPosition(i, width, height, isAi);
+                GameObject newPiece = Instantiate(piecesToPlace[i], new Vector3(newPosition.x * tileWidth, newPosition.y * tileWidth, 0f), Quaternion.identity) as GameObject;
+                newPiece.GetComponent<Piece>().setAsAi(isAi);
+                Position position = new Position(newPosition.x, newPosition.y);
+                pieces.set(position, newPiece);
+            }
         }
-        for (var i = 0; i < width; i++) {
-            GameObject newPiece = Instantiate(pawn, new Vector3(i * tileWidth, (height-1) * tileWidth, 0f), Quaternion.identity) as GameObject;
-            newPiece.GetComponent<Piece>().setAsAi(true);
-            Position position = new Position(i, height-1);
-            pieces.set(position, newPiece);
+    }
+
+    private Position indexToPosition(int i, int w, int h, bool isTop) {
+        int x = 0;
+        int y = Mathf.FloorToInt(i / w);
+        int rowI = i % w;
+        if (rowI % 2 == 0) {
+            x = w / 2 + (rowI / 2);
+        } else {
+            x = w / 2 - (rowI / 2) - 1;
         }
+        if (isTop) {
+            y = h - y - 1;
+        }
+        return new Position(x, y);
     }
 
     private void initBoardTiles() {

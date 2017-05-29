@@ -11,6 +11,11 @@ public class Position : System.Object {
         this.y = y;
     }
 
+    public Position(Position p) {
+        this.x = p.x;
+        this.y = p.y;
+    }
+
     public static bool operator !=(Position a, Position b) {
         return !(a == b);
     }

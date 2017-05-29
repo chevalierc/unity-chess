@@ -84,8 +84,13 @@
     <Compile Include="Assets\Scripts\Classes\Board.cs" />
     <Compile Include="Assets\Scripts\Classes\Move.cs" />
     <Compile Include="Assets\Scripts\Classes\Position.cs" />
-    <Compile Include="Assets\Scripts\Pawn.cs" />
-    <Compile Include="Assets\Scripts\Piece.cs" />
+    <Compile Include="Assets\Scripts\Pieces\Bishop.cs" />
+    <Compile Include="Assets\Scripts\Pieces\King.cs" />
+    <Compile Include="Assets\Scripts\Pieces\Knight.cs" />
+    <Compile Include="Assets\Scripts\Pieces\Pawn.cs" />
+    <Compile Include="Assets\Scripts\Pieces\Piece.cs" />
+    <Compile Include="Assets\Scripts\Pieces\Queen.cs" />
+    <Compile Include="Assets\Scripts\Pieces\Rook.cs" />
     <Compile Include="Assets\Scripts\Tile.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

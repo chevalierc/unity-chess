@@ -5,6 +5,7 @@ using UnityEngine;
 //abstract class for all pieces
 
 public abstract class Piece : MonoBehaviour {
+    public Position position;
     public Sprite aiSprite;
     public Sprite playerSprite;
     public float moveTime = 0.1f;
@@ -50,10 +51,10 @@ public abstract class Piece : MonoBehaviour {
     public abstract Move[] getMovesFromLocationOnBoard(Position position, Board board);
 
     public Position[] getMovesDestinationFromLocationOnBoard(Position position, Board board) {
-        Move[] move = getMovesFromLocationOnBoard(position, board);
-        Position[] positions = new Position[move.Length];
-        for (var i = 0; i < move.Length; i++) {
-            positions[i] = move[i].end;
+        Move[] moves = getMovesFromLocationOnBoard(position, board);
+        Position[] positions = new Position[moves.Length];
+        for (var i = 0; i < moves.Length; i++) {
+            positions[i] = moves[i].end;
         }
         return positions;
     }
