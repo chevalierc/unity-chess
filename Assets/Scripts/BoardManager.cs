@@ -22,10 +22,13 @@ public class BoardManager : MonoBehaviour {
     public GameObject[] AiStartingPieces;
 
     private float tileWidth;
+    private Vector3 boardTopLeft;
+    private Vector3 screenCenter;
 
     // Use this for initialization
     void Start() {
         isPlayerTurn = true;
+        getScreenInfo();
         initBoardTiles();
         initPieces();
     }
@@ -122,8 +125,15 @@ public class BoardManager : MonoBehaviour {
 
     //init functions
 
+    private void getScreenInfo() {
+        tileWidth = (float) tile.GetComponent<Renderer>().bounds.size.x;
+        screenCenter = Camera.main.ScreenToWorldPoint(new Vector3(Screen.width / 2, Screen.height / 2, Camera.main.nearClipPlane));
+        boardTopLeft = screenCenter + new Vector3(-this.width / 2 * tileWidth, -(float)(((this.height - 1) / 2) + .5) * tileWidth);
+    }
+
     private void initPieces() {
         pieces = new Board(width, height);
+        List<GameObject> piecesToPlace;
 
         //loop through player and ai
         bool isAi = true;
@@ -132,7 +142,6 @@ public class BoardManager : MonoBehaviour {
                 isAi = false;
             }
 
-            List<GameObject> piecesToPlace;
             if (isAi) {
                 piecesToPlace = new List<GameObject>(AiStartingPieces);
             } else {
@@ -143,10 +152,13 @@ public class BoardManager : MonoBehaviour {
             piecesToPlace.Sort(
                 (x, y) => y.GetComponent<Piece>().value.CompareTo(x.GetComponent<Piece>().value)
             );
+
             //instantiate each piece
             for (var i = 0; i < piecesToPlace.Count; i++) {
                 Position newPosition = indexToPosition(i, width, height, isAi);
-                GameObject newPiece = Instantiate(piecesToPlace[i], new Vector3(newPosition.x * tileWidth, newPosition.y * tileWidth, 0f), Quaternion.identity) as GameObject;
+                Vector3 location = new Vector3(newPosition.x * tileWidth, newPosition.y * tileWidth, 0f);
+                location += boardTopLeft;
+                GameObject newPiece = Instantiate(piecesToPlace[i], location, Quaternion.identity) as GameObject;
                 newPiece.GetComponent<Piece>().setAsAi(isAi);
                 Position position = new Position(newPosition.x, newPosition.y);
                 pieces.set(position, newPiece);
@@ -171,7 +183,7 @@ public class BoardManager : MonoBehaviour {
 
     private void initBoardTiles() {
         tiles = new Board(width, height);
-        tileWidth = (float) tile.GetComponent<Renderer>().bounds.size.x;
+        
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
                 GameObject newTile = tile;
@@ -192,7 +204,10 @@ public class BoardManager : MonoBehaviour {
                 newTile.GetComponent<Tile>().y = y;
                 newTile.GetComponent<Tile>().boardManager = this;
 
-                GameObject instance = Instantiate(newTile, new Vector3(x*tileWidth, y*tileWidth, 0f), Quaternion.identity) as GameObject;
+                Vector3 location = new Vector3(x * tileWidth, y * tileWidth, 0f);
+                location += boardTopLeft;
+
+                GameObject instance = Instantiate(newTile, location, Quaternion.identity) as GameObject;
                 tiles.set(new Position(x, y), instance);
             }
         }
