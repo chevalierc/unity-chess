@@ -6,7 +6,7 @@ public class King : Piece {
 
     override
     public Move[] getMovesFromLocationOnBoard(Position position, Board board) {
-        ArrayList moves = new ArrayList();
+        List<Move> moves = new List<Move>();
 
         for (var d = 0; d < 8; d++) {
             int dx = 0;
@@ -39,18 +39,16 @@ public class King : Piece {
             Position newPosition = new Position(position);
             newPosition.x += dx;
             newPosition.y += dy;
-            if (board.positionIsFree(newPosition)) {
-                moves.Add(new Move(position, newPosition));
-            } else {
-                if ((this.isAI && board.positionIsPlayer(newPosition)) || (!this.isAI && board.positionIsAI(newPosition))) {
-                    moves.Add(new Move(position, newPosition));
+            if ((this.isAI && board.positionIsPlayer(newPosition)) || (!this.isAI && board.positionIsAI(newPosition)) || board.positionIsFree(newPosition)) {
+                Move currentMove = new Move(position, newPosition);
+                Board boardAfterMove = board.getBoardAfterMove(currentMove);
+                if (!boardAfterMove.isSomeoneInCheck(this.isAI)) {
+                    moves.Add(currentMove);
                 }
             }
-            //TODO: chek to see if moving into check
         }
-
-
-        return (Move[])moves.ToArray(typeof(Move)); //BOOM!
+        
+        return moves.ToArray();
     }
 
 }

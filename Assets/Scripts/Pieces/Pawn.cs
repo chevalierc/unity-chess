@@ -6,51 +6,53 @@ public class Pawn : Piece {
 
     override
     public Move[] getMovesFromLocationOnBoard(Position position, Board board) {
-        ArrayList moves = new ArrayList();
-        //player
+        List<Move> moves = new List<Move>();
+        
+        int dy = 0;
         if (!this.isAI) {
-            Position newPosition = new Position(position.x, position.y + 1);
-            if (board.positionIsFree(newPosition)) {
-                moves.Add(new Move(position, newPosition));
-                //double jump
-                newPosition = new Position(position.x, position.y + 2);
-                if (board.positionIsFree(newPosition) && position.y == 0) {
-                    moves.Add(new Move(position, newPosition));
+            dy = 1;
+        } else {
+            dy = -1;
+        }
+
+        Debug.Log("yo");
+
+        Position newPosition = new Position(position.x, position.y + dy);
+        if (board.positionIsFree(newPosition)) {
+            Move currentMove = new Move(position, newPosition);
+            Board boardAfterMove = board.getBoardAfterMove(currentMove);
+            if (!boardAfterMove.isSomeoneInCheck(this.isAI)) {
+                moves.Add(currentMove);
+            }
+            //double jump
+            newPosition = new Position(position.x, position.y + dy*2);
+            if (board.positionIsFree(newPosition) && position == startingPosition) {
+                currentMove = new Move(position, newPosition);
+                boardAfterMove = board.getBoardAfterMove(currentMove);
+                if (!boardAfterMove.isSomeoneInCheck(this.isAI)) {
+                    moves.Add(currentMove);
                 }
-            }
-            //attackleft
-            newPosition = new Position(position.x - 1, position.y + 1);
-            if (board.positionIsAI(newPosition)) {
-                moves.Add(new Move(position, newPosition));
-            }
-            //attackright
-            newPosition = new Position(position.x + 1, position.y + 1);
-            if (board.positionIsAI(newPosition)) {
-                moves.Add(new Move(position, newPosition));
-            }
-            //ai
-        } else if (position.y >= 0) {
-            //one ahead
-            Position newPosition = new Position(position.x, position.y - 1);
-            if (board.positionIsFree(newPosition)) {
-                moves.Add(new Move(position, newPosition));
-                //double jump
-                newPosition = new Position(position.x, position.y - 2);
-                if (board.positionIsFree(newPosition) && position.y == board.height - 1) {
-                    moves.Add(new Move(position, newPosition));
-                }
-            }
-            //attackleft
-            newPosition = new Position(position.x - 1, position.y - 1);
-            if (board.positionIsPlayer(newPosition)) {
-                moves.Add(new Move(position, newPosition));
-            }
-            //attackright
-            newPosition = new Position(position.x + 1, position.y - 1);
-            if (board.positionIsPlayer(newPosition)) {
-                moves.Add(new Move(position, newPosition));
             }
         }
-        return (Move[]) moves.ToArray(typeof(Move)); //BOOM!
+        //attackleft
+        newPosition = new Position(position.x - 1, position.y + dy);
+        if (board.positionIsAI(newPosition)) {
+            Move currentMove = new Move(position, newPosition);
+            Board boardAfterMove = board.getBoardAfterMove(currentMove);
+            if (!boardAfterMove.isSomeoneInCheck(this.isAI)) {
+                moves.Add(currentMove);
+            }
+        }
+        //attackright
+        newPosition = new Position(position.x + 1, position.y + dy);
+        if (board.positionIsAI(newPosition)) {
+            Move currentMove = new Move(position, newPosition);
+            Board boardAfterMove = board.getBoardAfterMove(currentMove);
+            if (!boardAfterMove.isSomeoneInCheck(this.isAI)) {
+                moves.Add(currentMove);
+            }
+        }
+
+        return moves.ToArray();
     }
 }

@@ -22,7 +22,6 @@ public class Tile : MonoBehaviour {
     }
 
     void OnMouseDown() {
-        Debug.Log("yo");
         boardManager.onClick(x, y);
     }
 

@@ -16,6 +16,10 @@ public class Position : System.Object {
         this.y = p.y;
     }
 
+    public int manhattanDistanceTo(Position p2) {
+        return Mathf.Abs(p2.x - this.x) + Mathf.Abs(p2.y - this.y);
+    }
+
     public static bool operator !=(Position a, Position b) {
         return !(a == b);
     }

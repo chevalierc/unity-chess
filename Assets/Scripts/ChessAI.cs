@@ -32,7 +32,7 @@ public static class ChessAI  {
         }
 
         if(curDepth == maxDepth) {
-            return new Node(null, getBoardScore(currentBoard));
+            return new Node(null, currentBoard.getBoardScore() );
         }
 
         return minMax(currentBoard, aiTurn, alpha, beta, curDepth, maxDepth);
@@ -41,8 +41,7 @@ public static class ChessAI  {
     private static Node minMax(Board currentBoard, bool isAiTurn, int alpha, int beta, int curDepth, int maxDepth) {
         Node minOrMaxNode = new Node(null, 0);
 
-        Move[] possibleMoves = getpossibleMovesFor(currentBoard, isAiTurn);
-        Debug.Log(possibleMoves.Length);
+        Move[] possibleMoves = currentBoard.getPossibleMovesFor(isAiTurn);
         for(var i = 0; i < possibleMoves.Length; i++) {
             Move move = possibleMoves[i];
             Board newBoard = currentBoard.getBoardAfterMove(move);
@@ -90,42 +89,6 @@ public static class ChessAI  {
         }
 
         return minOrMaxNode;
-    }
-
-    public static Move[] getpossibleMovesFor(Board currentBoard, bool isAiTurn) {
-        ArrayList possibleMoves = new ArrayList();
-        for (var x = 0; x < currentBoard.width; x++) {
-            for (var y = 0; y < currentBoard.height; y++) {
-                Position position = new Position(x, y);
-                if (currentBoard.get(position)) {
-                    Piece currentPiece = currentBoard.get(position).GetComponent<Piece>();
-                    if (currentPiece.isAI && isAiTurn) {
-                        possibleMoves.AddRange(currentPiece.getMovesFromLocationOnBoard(position, currentBoard));
-                    }else if (!currentPiece.isAI && !isAiTurn) {
-                        possibleMoves.AddRange(currentPiece.getMovesFromLocationOnBoard(position, currentBoard));
-                    }
-                }
-            }
-        }
-
-        return (Move[]) possibleMoves.ToArray(typeof(Move));
-    }
-
-    public static int getBoardScore(Board currentBoard) {
-        //returns sum of players pieces values - ai piece values. Higher score is better for player
-        int score = 0;
-        GameObject[] board = currentBoard.asArray();
-        for (var i = 0; i < board.Length; i++) {
-            if (board[i]) {
-                Piece piece = board[i].GetComponent<Piece>();
-                if (piece.isAI) {
-                    score -= piece.value;
-                } else if (!piece.isAI) {
-                    score += piece.value;
-                }
-            }
-        }
-        return score;
     }
 
 

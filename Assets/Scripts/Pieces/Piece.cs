@@ -6,6 +6,7 @@ using UnityEngine;
 
 public abstract class Piece : MonoBehaviour {
     public Position position;
+    public Position startingPosition;
     public Sprite aiSprite;
     public Sprite playerSprite;
     public float moveTime = 0.1f;
@@ -30,13 +31,11 @@ public abstract class Piece : MonoBehaviour {
         rb2d = GetComponent<Rigidbody2D>();
     }
 
-    public void move(Position position) {
-        StartCoroutine(SmoothMovement(position));
+    public void move(Vector3 end) {
+        StartCoroutine(SmoothMovement(end));
     }
 
-    public IEnumerator SmoothMovement(Position position) {
-        Vector3 end = new Vector3(position.x, position.y);
-        end = end * GetComponent<Renderer>().bounds.size.x;
+    public IEnumerator SmoothMovement(Vector3 end) {
         float inverseMoveTime = 1f / moveTime;
         float sqrRemainingDistance = (transform.position - end).sqrMagnitude;
         while (sqrRemainingDistance > float.Epsilon) {
@@ -58,5 +57,19 @@ public abstract class Piece : MonoBehaviour {
         }
         return positions;
     }
+
+    public Move[] removeAnyMovesThatPutPlayerInCheck(Move[] moves, Board board) {
+        List<Move> possibleMoves = new List<Move>();
+        for(int i = 0; i < moves.Length; i++) {
+            Move currentMove = moves[i];
+            Board boardAfterMove = board.getBoardAfterMove(currentMove);
+            if (!boardAfterMove.isSomeoneInCheck(this.isAI)){
+                possibleMoves.Add(currentMove);
+            }
+        }
+        return possibleMoves.ToArray();
+    }
+
+
 
 }

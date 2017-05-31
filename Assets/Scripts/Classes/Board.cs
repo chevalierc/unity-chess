@@ -59,6 +59,65 @@ public class Board {
         return false;
     }
 
+    public bool isSomeoneInCheck(bool checkForAiInCheck) {
+        //check if ai or player is in check
+        Debug.Log("IsSomeoneInCheck?");
+        return false;
+        Move[] moves = this.getPossibleMovesFor(!checkForAiInCheck);
+        Debug.Log(moves.Length);
+        for(int i = 0; i < moves.Length; i++) {
+            Position destination = moves[i].end;
+            if (!this.positionIsFree(destination)) {
+                if( (checkForAiInCheck && this.positionIsPlayer(destination)) || (!checkForAiInCheck && this.positionIsAI(destination)) ){
+                    Debug.Log(this.get(destination).name);
+                    if( this.get(destination).name == "King") {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    public Move[] getPossibleMovesFor( bool isAiTurn) {
+        Board currentBoard = this;
+        List<Move> possibleMoves = new List<Move>();
+        for (var x = 0; x < currentBoard.width; x++) {
+            for (var y = 0; y < currentBoard.height; y++) {
+                Position position = new Position(x, y);
+                if (currentBoard.get(position)) {
+                    Piece currentPiece = currentBoard.get(position).GetComponent<Piece>();
+                    if ( (currentPiece.isAI && isAiTurn) || (!currentPiece.isAI && !isAiTurn) ) {
+                        possibleMoves.AddRange(currentPiece.getMovesFromLocationOnBoard(position, currentBoard));
+                    }
+                }
+            }
+        }
+
+        return possibleMoves.ToArray();
+    }
+
+    public int getBoardScore() {
+        //returns sum of players pieces values - ai piece values. Higher score is better for player
+        Board currentBoard = this;
+        int score = 0;
+        Position boardCenter = new Position(currentBoard.width / 2, currentBoard.height / 2);
+        GameObject[] board = currentBoard.asArray();
+        for (var i = 0; i < board.Length; i++) {
+            if (board[i]) {
+                Piece piece = board[i].GetComponent<Piece>();
+                if (piece.isAI) {
+                    score -= piece.value * 100;
+                    score += board[i].GetComponent<Piece>().position.manhattanDistanceTo(boardCenter);
+                } else if (!piece.isAI) {
+                    score += piece.value * 100;
+                    score -= board[i].GetComponent<Piece>().position.manhattanDistanceTo(boardCenter);
+                }
+            }
+        }
+        return score;
+    }
+
     public bool positionIsAI(Position position) {
         if (positionExists(position)) {
             if(this.get(position) != null) {
@@ -72,14 +131,15 @@ public class Board {
         return boardObjects;
     }
 
-    public void move(Move move) {
-        this.move(move.start, move.end);
+    public Board move(Move move) {
+        return this.move(move.start, move.end);
     }
 
-    public void move(Position currentPosition, Position newPosition) {
+    public Board move(Position currentPosition, Position newPosition) {
         GameObject currentPiece = get(currentPosition);
         set(newPosition, currentPiece);
         set(currentPosition, null);
+        return this;
     }
 
     public GameObject get (Position pos) {
@@ -88,9 +148,10 @@ public class Board {
         return (GameObject)this.boardObjects[i];
     }
 
-    public void set(Position pos, GameObject piece) {
+    public Board set(Position pos, GameObject piece) {
         int i = pos.y * this.width + pos.x;
         this.boardObjects[i] = piece;
+        return this;
     }
 
     public Board getBoardAfterMove(Move move) {

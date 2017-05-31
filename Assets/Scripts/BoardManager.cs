@@ -16,8 +16,6 @@ public class BoardManager : MonoBehaviour {
     public ChessManager chessManager;
 
     public GameObject tile;
-    public GameObject pawn;
-
     public GameObject[] PlayerStartingPieces;
     public GameObject[] AiStartingPieces;
 
@@ -65,19 +63,22 @@ public class BoardManager : MonoBehaviour {
                 if (!pieces.positionIsFree(clickPosition) && !pieces.get(clickPosition).GetComponent<Piece>().isAI) {
                     selectTile(clickPosition);
                     getOptions(clickPosition);
-                    Debug.Log(possibleMovePositions.Length);
                     setOptions();
                 }
             } else {
                 if (clickPosition == selectedTile) {
                     resetTiles();
-                } else {
-                    if (new ArrayList(possibleMovePositions).Contains(clickPosition)) {
-                        movePiece(selectedTile, clickPosition, false);
-                        doAiTurn();
-                        resetTiles();
-                    }
+                } else if (!pieces.positionIsFree(clickPosition) && !pieces.get(clickPosition).GetComponent<Piece>().isAI) {
+                    resetTiles();
+                    selectTile(clickPosition);
+                    getOptions(clickPosition);
+                    setOptions();
+                } else if (new ArrayList(possibleMovePositions).Contains(clickPosition)) {
+                    movePiece(selectedTile, clickPosition, false);
+                    doAiTurn();
+                    resetTiles();
                 }
+                
             }
         }
 
@@ -91,13 +92,14 @@ public class BoardManager : MonoBehaviour {
     //piece gui
 
     public void movePiece(Position startPosition, Position endPosition, bool isAi) {
-        Debug.Log(startPosition.x + "," + startPosition.y + "to" + endPosition.x + "," + endPosition.y);
         if (pieces.get(endPosition)) {
             Destroy(pieces.get(endPosition));
         }
-
         GameObject pieceToMove = pieces.get(startPosition);
-        pieceToMove.GetComponent<Piece>().move(endPosition);
+        Vector3 endVector = new Vector3(endPosition.x * tileWidth, -endPosition.y * tileWidth, 0f);
+        endVector += boardTopLeft;
+        pieceToMove.GetComponent<Piece>().move(endVector);
+        pieceToMove.GetComponent<Piece>().position = new Position(endPosition);
         pieces.move(startPosition, endPosition);
     }
 
@@ -127,8 +129,8 @@ public class BoardManager : MonoBehaviour {
 
     private void getScreenInfo() {
         tileWidth = (float) tile.GetComponent<Renderer>().bounds.size.x;
-        screenCenter = Camera.main.ScreenToWorldPoint(new Vector3(Screen.width / 2, Screen.height / 2, Camera.main.nearClipPlane));
-        boardTopLeft = screenCenter + new Vector3(-this.width / 2 * tileWidth, -(float)(((this.height - 1) / 2) + .5) * tileWidth);
+        screenCenter = Camera.main.ScreenToWorldPoint(new Vector3(Screen.width / 2, Screen.height / 2, 10));
+        boardTopLeft = screenCenter + new Vector3(-this.width / 2 * tileWidth, (float)((this.height / 2) -.5) * tileWidth);
     }
 
     private void initPieces() {
@@ -150,17 +152,21 @@ public class BoardManager : MonoBehaviour {
 
             //sort by the value of the pieces
             piecesToPlace.Sort(
-                (x, y) => y.GetComponent<Piece>().value.CompareTo(x.GetComponent<Piece>().value)
-            );
+                (x, y) => {
+                    int result = y.GetComponent<Piece>().value.CompareTo(x.GetComponent<Piece>().value);
+                    return result != 0 ? result : y.name.CompareTo(x.name);
+                });
 
             //instantiate each piece
             for (var i = 0; i < piecesToPlace.Count; i++) {
                 Position newPosition = indexToPosition(i, width, height, isAi);
-                Vector3 location = new Vector3(newPosition.x * tileWidth, newPosition.y * tileWidth, 0f);
+                Vector3 location = new Vector3(newPosition.x * tileWidth, - newPosition.y * tileWidth, 0f);
                 location += boardTopLeft;
                 GameObject newPiece = Instantiate(piecesToPlace[i], location, Quaternion.identity) as GameObject;
                 newPiece.GetComponent<Piece>().setAsAi(isAi);
-                Position position = new Position(newPosition.x, newPosition.y);
+                newPiece.GetComponent<Piece>().startingPosition = new Position(newPosition);
+                newPiece.GetComponent<Piece>().position = new Position(newPosition);
+                Position position = new Position(newPosition);
                 pieces.set(position, newPiece);
             }
         }
@@ -204,7 +210,7 @@ public class BoardManager : MonoBehaviour {
                 newTile.GetComponent<Tile>().y = y;
                 newTile.GetComponent<Tile>().boardManager = this;
 
-                Vector3 location = new Vector3(x * tileWidth, y * tileWidth, 0f);
+                Vector3 location = new Vector3(x * tileWidth, -y * tileWidth, 0f);
                 location += boardTopLeft;
 
                 GameObject instance = Instantiate(newTile, location, Quaternion.identity) as GameObject;
